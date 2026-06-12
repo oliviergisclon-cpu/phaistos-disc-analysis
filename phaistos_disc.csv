@@ -1,0 +1,62 @@
+group,face,position_global,signs,oblique,day_approx,notes
+A01,A,1,"2,12,13,1,18",False,13.5,
+A02,A,2,"24,40,12",False,19.5,
+A03,A,3,"29,45,7",True,25.4,
+A04,A,4,"29,29,34",False,31.4,Doublon S29
+A05,A,5,"2,12,4,40,33",False,37.3,
+A06,A,6,"27,45,7,12",False,43.3,
+A07,A,7,"27,44,8",False,49.2,
+A08,A,8,"2,12,6,18",True,55.2,
+A09,A,9,"31,26,35",False,61.1,Contrainte datation Venus
+A10,A,10,"2,12,41,19,35",False,67.1,
+A11,A,11,"1,41,40,7",False,73.0,
+A12,A,12,"2,12,32,23,38",True,79.0,
+A13,A,13,"39,11",False,84.9,
+A14,A,14,"2,27,25,10,23,18",False,90.9,Protocole verification =A20
+A15,A,15,"28,1",True,96.8,
+A16,A,16,"2,12,31,26",True,102.8,
+A17,A,17,"2,12,27,27,35,37,21",False,108.7,Doublon S27 intercalaire
+A18,A,18,"33,23",False,114.7,
+A19,A,19,"2,12,31,26",True,120.6,Lever heliaque Sirius
+A20,A,20,"2,27,25,10,23,18",False,126.6,Protocole verification =A14
+A21,A,21,"28,1",True,132.5,
+A22,A,22,"2,12,31,26",True,138.5,
+A23,A,23,"2,12,27,14,32,18,27",False,144.4,
+A24,A,24,"6,18,17,19",False,150.4,
+A25,A,25,"31,26,12",False,156.3,
+A26,A,26,"2,12,13,1",False,162.3,
+A27,A,27,"23,19,35",True,168.2,
+A28,A,28,"10,3,38",False,174.2,Cardinal =A31
+A29,A,29,"2,12,27,27,35,37,21",False,180.1,Equinoxe printemps =A17
+A30,A,30,"13,1",False,186.1,
+A31,A,31,"10,3,38",False,192.0,Cardinal =A28
+B01,B,32,"2,12,22,40,7",False,198.0,Lever heliaque Pleiades +4j
+B02,B,33,"27,45,7,35",False,204.0,
+B03,B,34,"2,37,23,5",True,209.9,
+B04,B,35,"22,25,27",False,215.9,
+B05,B,36,"33,24,20,12",False,221.8,
+B06,B,37,"16,23,18,43",True,227.8,Lever Antares
+B07,B,38,"13,1,39,33",False,233.7,
+B08,B,39,"15,7,13,1,18",False,239.7,
+B09,B,40,"22,37,42,25",False,245.6,
+B10,B,41,"7,24,40,35",False,251.6,
+B11,B,42,"2,26,36,40",False,257.5,
+B12,B,43,"27,25,38,1",False,263.5,
+B13,B,44,"29,24,24,20,35",False,269.4,Doublon S24 Solstice ete
+B14,B,45,"16,14,18",False,275.4,
+B15,B,46,"29,33,1",False,281.3,
+B16,B,47,"6,35,32,39,33",False,287.3,
+B17,B,48,"2,9,27,1",False,293.2,
+B18,B,49,"29,36,7,8",True,299.2,Conjonction Lune-Jupiter
+B19,B,50,"29,8,13",False,305.1,
+B20,B,51,"29,45,7",True,311.1,
+B21,B,52,"22,29,36,7,8",True,317.0,Sequence automnale =B26
+B22,B,53,"27,34,23,25",False,323.0,
+B23,B,54,"7,18,35",False,328.9,
+B24,B,55,"7,45,7",True,334.9,Lune-Pleiades-Lune
+B25,B,56,"7,23,18,24",False,340.8,
+B26,B,57,"22,29,36,7,8",True,346.8,Sequence automnale =B21
+B27,B,58,"9,30,39,18,7",False,352.7,
+B28,B,59,"2,6,35,23,7",False,358.7,
+B29,B,60,"29,34,23,25",False,364.6,
+B30,B,61,"45,7",True,370.6,Transition annee suivante

@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Phaistos Disc — Interactive Structural Analysis</title>
+<style>
+  :root {
+    --deep: #0d1117;
+    --panel: #161b22;
+    --border: #30363d;
+    --gold: #d4a843;
+    --blue: #58a6ff;
+    --green: #3fb950;
+    --orange: #e3a84c;
+    --purple: #bc8cff;
+    --red: #f85149;
+    --text: #e6edf3;
+    --muted: #8b949e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--deep);
+    color: var(--text);
+    font-family: 'Georgia', serif;
+    min-height: 100vh;
+  }
+
+  header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    padding: 48px 24px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  header h1 {
+    font-size: clamp(1.4rem, 4vw, 2.4rem);
+    color: var(--gold);
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+
+  header p {
+    color: var(--muted);
+    font-size: 0.95rem;
+    font-style: italic;
+  }
+
+  .stat-bar {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    padding: 20px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat .number {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--gold);
+    display: block;
+  }
+
+  .stat .label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 16px;
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+  }
+
+  @media (max-width: 900px) {
+    .main { grid-template-columns: 1fr; }
+  }
+
+  .disc-container {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+  }
+
+  h2 {
+    font-size: 1.1rem;
+    color: var(--gold);
+    margin-bottom: 16px;
+    letter-spacing: 0.05em;
+  }
+
+  .legend {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+  }
+
+  .legend-item:hover, .legend-item.active {
+    border-color: var(--border);
+    color: var(--text);
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .spiral-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 4px;
+    margin-bottom: 20px;
+  }
+
+  .group-cell {
+    aspect-ratio: 1;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    background: var(--deep);
+    font-family: monospace;
+  }
+
+  .group-cell:hover {
+    transform: scale(1.1);
+    z-index: 10;
+    border-color: var(--gold);
+  }
+
+  .group-cell.oblique::after {
+    content: '/';
+    position: absolute;
+    bottom: 1px;
+    right: 2px;
+    font-size: 0.65rem;
+    color: var(--gold);
+    opacity: 0.8;
+  }
+
+  /* Level colors */
+  .lvl-1 { background: rgba(88, 166, 255, 0.2); border-color: rgba(88,166,255,0.5); }
+  .lvl-2 { background: rgba(63, 185, 80, 0.2); border-color: rgba(63,185,80,0.5); }
+  .lvl-3 { background: rgba(188, 140, 255, 0.2); border-color: rgba(188,140,255,0.5); }
+  .lvl-4 { background: rgba(227, 168, 76, 0.2); border-color: rgba(227,168,76,0.5); }
+  .lvl-5 { background: rgba(248, 81, 73, 0.15); border-color: rgba(248,81,73,0.4); }
+
+  .face-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 8px 0 4px;
+  }
+
+  /* Detail panel */
+  .detail-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    position: sticky;
+    top: 16px;
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+  }
+
+  .detail-panel h3 {
+    color: var(--gold);
+    font-size: 1.3rem;
+    margin-bottom: 4px;
+  }
+
+  .detail-panel .subtitle {
+    color: var(--muted);
+    font-size: 0.8rem;
+    margin-bottom: 20px;
+  }
+
+  .sign-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .sign-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: var(--deep);
+    border-radius: 4px;
+    border-left: 3px solid var(--border);
+  }
+
+  .sign-id {
+    font-family: monospace;
+    font-size: 0.85rem;
+    color: var(--gold);
+    width: 36px;
+    flex-shrink: 0;
+  }
+
+  .sign-desc {
+    font-size: 0.8rem;
+    color: var(--text);
+  }
+
+  .sign-level {
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-left: auto;
+  }
+
+  .reading-box {
+    background: var(--deep);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--gold);
+    border-radius: 4px;
+    padding: 12px;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--text);
+  }
+
+  .reading-box .date {
+    color: var(--muted);
+    font-style: italic;
+    font-size: 0.75rem;
+    margin-top: 8px;
+  }
+
+  .metadata {
+    margin-top: 16px;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .metadata span { color: var(--text); }
+
+  .oblique-badge {
+    display: inline-block;
+    background: rgba(212, 168, 67, 0.2);
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-top: 8px;
+  }
+
+  /* Stats section */
+  .stats-section {
+    grid-column: 1 / -1;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+  }
+
+  .tests-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .test-card {
+    background: var(--deep);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px;
+  }
+
+  .test-card .test-name {
+    font-size: 0.8rem;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .test-card .test-p {
+    font-family: monospace;
+    font-size: 1rem;
+    font-weight: bold;
+  }
+
+  .test-card .test-verdict {
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .p-certain { color: var(--green); }
+  .p-strong { color: var(--blue); }
+  .p-suggestive { color: var(--orange); }
+
+  footer {
+    text-align: center;
+    padding: 32px;
+    color: var(--muted);
+    font-size: 0.8rem;
+    border-top: 1px solid var(--border);
+  }
+
+  footer a { color: var(--blue); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>THE PHAISTOS DISC</h1>
+  <p>A Lunisolar Information System · ~1700 BCE · Phaistos, Crete</p>
+  <p style="margin-top:8px; font-size:0.8rem; color: #58a6ff;">
+    First structural decoding after 117 years of failed attempts · Gisclon (2026)
+  </p>
+</header>
+
+<div class="stat-bar">
+  <div class="stat">
+    <span class="number">241</span>
+    <span class="label">Signs</span>
+  </div>
+  <div class="stat">
+    <span class="number">61</span>
+    <span class="label">Groups</span>
+  </div>
+  <div class="stat">
+    <span class="number">5</span>
+    <span class="label">Levels</span>
+  </div>
+  <div class="stat">
+    <span class="number">94%</span>
+    <span class="label">Decoded</span>
+  </div>
+  <div class="stat">
+    <span class="number">10⁻³⁸</span>
+    <span class="label">Fisher p</span>
+  </div>
+  <div class="stat">
+    <span class="number">11</span>
+    <span class="label">Celestial objects</span>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="disc-container">
+    <h2>Interactive Disc — Click any group to read it</h2>
+
+    <div class="legend" id="legend">
+      <div class="legend-item active" data-filter="all">
+        <div class="legend-dot" style="background:#8b949e"></div>All
+      </div>
+      <div class="legend-item" data-filter="1">
+        <div class="legend-dot" style="background:#58a6ff"></div>Level 1 — Structure
+      </div>
+      <div class="legend-item" data-filter="2">
+        <div class="legend-dot" style="background:#3fb950"></div>Level 2 — Period
+      </div>
+      <div class="legend-item" data-filter="3">
+        <div class="legend-dot" style="background:#bc8cff"></div>Level 3 — Lunar month
+      </div>
+      <div class="legend-item" data-filter="4">
+        <div class="legend-dot" style="background:#e3a84c"></div>Level 4 — Lunar phase
+      </div>
+      <div class="legend-item" data-filter="5">
+        <div class="legend-dot" style="background:#f85149"></div>Level 5 — Content
+      </div>
+    </div>
+
+    <div class="face-label">Face A — Winter semester (Oct → Mar)</div>
+    <div class="spiral-grid" id="faceA"></div>
+    <div class="face-label">Face B — Summer semester (Apr → Sep)</div>
+    <div class="spiral-grid" id="faceB"></div>
+  </div>
+
+  <div class="detail-panel" id="detailPanel">
+    <h3>Select a group</h3>
+    <p class="subtitle">Click any cell on the disc to read its astronomical content</p>
+    <div class="reading-box">
+      <strong>Example — Group A09:</strong><br>
+      [S31, S26, S35]<br><br>
+      Orion visible. Sirius present.<br>
+      Venus on the horizon.<br>
+      <span class="date">Day 61 ≈ December 5, before dawn<br>from Phaistos (35°N), ~1700 BCE</span>
+    </div>
+    <div class="metadata" style="margin-top:20px">
+      <p>This is not a translation.<br>
+      It is a reading of a structured<br>
+      information system whose architecture<br>
+      is formally demonstrated.</p>
+    </div>
+  </div>
+
+  <div class="stats-section">
+    <h2>Statistical Proof — 15 Independent Tests</h2>
+    <div class="tests-grid">
+      <div class="test-card">
+        <div class="test-name">T1 — S02 position 1 invariant</div>
+        <div class="test-p p-certain">p = 4.62 × 10⁻¹²</div>
+        <div class="test-verdict">✓ Survives Bonferroni · CERTAIN</div>
+      </div>
+      <div class="test-card">
+        <div class="test-name">T3 — S12 follows S02 (face A)</div>
+        <div class="test-p p-certain">p = 1.40 × 10⁻¹⁴</div>
+        <div class="test-verdict">✓ Survives Bonferroni · CERTAIN</div>
+      </div>
+      <div class="test-card">
+        <div class="test-name">T2 — S38 at solar cardinals (4/4)</div>
+        <div class="test-p p-certain">p = 1.92 × 10⁻⁶</div>
+        <div class="test-verdict">✓ Survives Bonferroni · CERTAIN</div>
+      </div>
+      <div class="test-card">
+        <div class="test-name">T9 — A14 = A20 identical groups</div>
+        <div class="test-p p-certain">p = 4.46 × 10⁻⁴</div>
+        <div class="test-verdict">✓ Survives Bonferroni · CERTAIN</div>
+      </div>
+      <div class="test-card">
+        <div class="test-name">T15 — Obliques exclude S27/S25</div>
+        <div class="test-p p-strong">p = 0.005</div>
+        <div class="test-verdict">* Strong · Meta-marker of absent lunar info</div>
+      </div>
+      <div class="test-card">
+        <div class="test-name">T7 — S31→S26 invariant order</div>
+        <div class="test-p p-strong">p = 0.031</div>
+        <div class="test-verdict">* Strong · Orion always precedes Sirius</div>
+      </div>
+      <div class="test-card">
+        <div class="test-name">T5 — S31 exclusive face A</div>
+        <div class="test-p p-strong">p = 0.034</div>
+        <div class="test-verdict">* Strong · Orion = winter constellation</div>
+      </div>
+      <div class="test-card">
+        <div class="test-name">T6 — S22 exclusive face B</div>
+        <div class="test-p p-strong">p = 0.029</div>
+        <div class="test-verdict">* Strong · Scorpion = summer constellation</div>
+      </div>
+      <div class="test-card" style="border-color: var(--gold); background: rgba(212,168,67,0.05)">
+        <div class="test-name" style="color:var(--gold)">Fisher Combined (15 tests)</div>
+        <div class="test-p" style="color:var(--gold)">p &lt; 10⁻³⁸</div>
+        <div class="test-verdict" style="color:var(--gold)">Null hypothesis definitively rejected</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p>Gisclon, O. (2026). The Phaistos Disc as a Lunisolar Information System.</p>
+  <p style="margin-top:4px">
+    <a href="https://hal.science/hal-05652844">HAL hal-05652844</a> ·
+    <a href="https://doi.org/10.5281/zenodo.20630895">Zenodo DOI</a> ·
+    Data &amp; code: CC BY 4.0
+  </p>
+</footer>
+
+<script>
+// Data
+const GROUPS = [
+  {g:'A01',face:'A',signs:[2,12,13,1,18],oblique:false,day:13.5},
+  {g:'A02',face:'A',signs:[24,40,12],oblique:false,day:19.5},
+  {g:'A03',face:'A',signs:[29,45,7],oblique:true,day:25.4},
+  {g:'A04',face:'A',signs:[29,29,34],oblique:false,day:31.4},
+  {g:'A05',face:'A',signs:[2,12,4,40,33],oblique:false,day:37.3},
+  {g:'A06',face:'A',signs:[27,45,7,12],oblique:false,day:43.3},
+  {g:'A07',face:'A',signs:[27,44,8],oblique:false,day:49.2},
+  {g:'A08',face:'A',signs:[2,12,6,18],oblique:true,day:55.2},
+  {g:'A09',face:'A',signs:[31,26,35],oblique:false,day:61.1},
+  {g:'A10',face:'A',signs:[2,12,41,19,35],oblique:false,day:67.1},
+  {g:'A11',face:'A',signs:[1,41,40,7],oblique:false,day:73.0},
+  {g:'A12',face:'A',signs:[2,12,32,23,38],oblique:true,day:79.0},
+  {g:'A13',face:'A',signs:[39,11],oblique:false,day:84.9},
+  {g:'A14',face:'A',signs:[2,27,25,10,23,18],oblique:false,day:90.9},
+  {g:'A15',face:'A',signs:[28,1],oblique:true,day:96.8},
+  {g:'A16',face:'A',signs:[2,12,31,26],oblique:true,day:102.8},
+  {g:'A17',face:'A',signs:[2,12,27,27,35,37,21],oblique:false,day:108.7},
+  {g:'A18',face:'A',signs:[33,23],oblique:false,day:114.7},
+  {g:'A19',face:'A',signs:[2,12,31,26],oblique:true,day:120.6},
+  {g:'A20',face:'A',signs:[2,27,25,10,23,18],oblique:false,day:126.6},
+  {g:'A21',face:'A',signs:[28,1],oblique:true,day:132.5},
+  {g:'A22',face:'A',signs:[2,12,31,26],oblique:true,day:138.5},
+  {g:'A23',face:'A',signs:[2,12,27,14,32,18,27],oblique:false,day:144.4},
+  {g:'A24',face:'A',signs:[6,18,17,19],oblique:false,day:150.4},
+  {g:'A25',face:'A',signs:[31,26,12],oblique:false,day:156.3},
+  {g:'A26',face:'A',signs:[2,12,13,1],oblique:false,day:162.3},
+  {g:'A27',face:'A',signs:[23,19,35],oblique:true,day:168.2},
+  {g:'A28',face:'A',signs:[10,3,38],oblique:false,day:174.2},
+  {g:'A29',face:'A',signs:[2,12,27,27,35,37,21],oblique:false,day:180.1},
+  {g:'A30',face:'A',signs:[13,1],oblique:false,day:186.1},
+  {g:'A31',face:'A',signs:[10,3,38],oblique:false,day:192.0},
+  {g:'B01',face:'B',signs:[2,12,22,40,7],oblique:false,day:198.0},
+  {g:'B02',face:'B',signs:[27,45,7,35],oblique:false,day:204.0},
+  {g:'B03',face:'B',signs:[2,37,23,5],oblique:true,day:209.9},
+  {g:'B04',face:'B',signs:[22,25,27],oblique:false,day:215.9},
+  {g:'B05',face:'B',signs:[33,24,20,12],oblique:false,day:221.8},
+  {g:'B06',face:'B',signs:[16,23,18,43],oblique:true,day:227.8},
+  {g:'B07',face:'B',signs:[13,1,39,33],oblique:false,day:233.7},
+  {g:'B08',face:'B',signs:[15,7,13,1,18],oblique:false,day:239.7},
+  {g:'B09',face:'B',signs:[22,37,42,25],oblique:false,day:245.6},
+  {g:'B10',face:'B',signs:[7,24,40,35],oblique:false,day:251.6},
+  {g:'B11',face:'B',signs:[2,26,36,40],oblique:false,day:257.5},
+  {g:'B12',face:'B',signs:[27,25,38,1],oblique:false,day:263.5},
+  {g:'B13',face:'B',signs:[29,24,24,20,35],oblique:false,day:269.4},
+  {g:'B14',face:'B',signs:[16,14,18],oblique:false,day:275.4},
+  {g:'B15',face:'B',signs:[29,33,1],oblique:false,day:281.3},
+  {g:'B16',face:'B',signs:[6,35,32,39,33],oblique:false,day:287.3},
+  {g:'B17',face:'B',signs:[2,9,27,1],oblique:false,day:293.2},
+  {g:'B18',face:'B',signs:[29,36,7,8],oblique:true,day:299.2},
+  {g:'B19',face:'B',signs:[29,8,13],oblique:false,day:305.1},
+  {g:'B20',face:'B',signs:[29,45,7],oblique:true,day:311.1},
+  {g:'B21',face:'B',signs:[22,29,36,7,8],oblique:true,day:317.0},
+  {g:'B22',face:'B',signs:[27,34,23,25],oblique:false,day:323.0},
+  {g:'B23',face:'B',signs:[7,18,35],oblique:false,day:328.9},
+  {g:'B24',face:'B',signs:[7,45,7],oblique:true,day:334.9},
+  {g:'B25',face:'B',signs:[7,23,18,24],oblique:false,day:340.8},
+  {g:'B26',face:'B',signs:[22,29,36,7,8],oblique:true,day:346.8},
+  {g:'B27',face:'B',signs:[9,30,39,18,7],oblique:false,day:352.7},
+  {g:'B28',face:'B',signs:[2,6,35,23,7],oblique:false,day:358.7},
+  {g:'B29',face:'B',signs:[29,34,23,25],oblique:false,day:364.6},
+  {g:'B30',face:'B',signs:[45,7],oblique:true,day:370.6},
+];
+
+const SIGNS = {
+  1:{name:'Observation act',level:5,cat:'instrumental'},
+  2:{name:'Group delimiter',level:1,cat:'structural'},
+  3:{name:'Confirmation',level:1,cat:'structural'},
+  6:{name:'Unknown (instrumental?)',level:5,cat:'unknown'},
+  7:{name:'Moon visible',level:4,cat:'lunar'},
+  8:{name:'Jupiter',level:5,cat:'planet'},
+  9:{name:'Pegasus?',level:5,cat:'unknown'},
+  10:{name:'Heliacal target',level:5,cat:'instrumental'},
+  12:{name:'Period identifier',level:2,cat:'structural'},
+  13:{name:'Spica (α Vir)',level:5,cat:'star'},
+  14:{name:'Unknown',level:5,cat:'unknown'},
+  15:{name:'Unknown',level:5,cat:'unknown'},
+  16:{name:'Antares region',level:5,cat:'star'},
+  17:{name:'Unknown (measure?)',level:5,cat:'unknown'},
+  18:{name:'Gnomon / solar measure',level:5,cat:'instrumental'},
+  19:{name:'Venus morning star',level:5,cat:'planet'},
+  20:{name:'Cygnus / Summer Tri.',level:5,cat:'star'},
+  21:{name:'Gemini',level:5,cat:'constellation'},
+  22:{name:'Scorpion / Antares',level:5,cat:'constellation'},
+  23:{name:'Result notation',level:5,cat:'instrumental'},
+  24:{name:'Aquila / Altair',level:5,cat:'star'},
+  25:{name:'Lunar quarter',level:3,cat:'lunar'},
+  26:{name:'Sirius or Scorpion',level:5,cat:'star'},
+  27:{name:'Lunar month marker',level:3,cat:'lunar'},
+  28:{name:'Procyon',level:5,cat:'star'},
+  29:{name:'Sagittarius',level:5,cat:'constellation'},
+  30:{name:'Unknown',level:5,cat:'unknown'},
+  31:{name:'Orion',level:5,cat:'constellation'},
+  32:{name:'Unknown (Hyades?)',level:5,cat:'unknown'},
+  33:{name:'Leo / Regulus',level:5,cat:'constellation'},
+  34:{name:'Cycle transition',level:5,cat:'structural'},
+  35:{name:'Venus (planet)',level:5,cat:'planet'},
+  36:{name:'Capricorn',level:5,cat:'constellation'},
+  37:{name:'Taurus',level:5,cat:'constellation'},
+  38:{name:'Solar cardinal',level:1,cat:'structural'},
+  39:{name:'Cancer?',level:5,cat:'unknown'},
+  40:{name:'Pleiades (seasonal)',level:5,cat:'star'},
+  41:{name:'Unknown',level:5,cat:'unknown'},
+  42:{name:'Unknown (Aldebaran?)',level:5,cat:'unknown'},
+  43:{name:'Unknown (qualifier?)',level:5,cat:'unknown'},
+  44:{name:'Unknown',level:5,cat:'unknown'},
+  45:{name:'Pleiades (lunar)',level:5,cat:'star'},
+};
+
+const READINGS = {
+  'A09': 'Orion visible. Sirius present. Venus on the horizon.\n→ Day 61 ≈ December 5, before dawn.',
+  'A14': 'Entry. Lunar month. First quarter. Heliacal target. Result noted. Gnomon measurement.\n→ Complete 6-step observation protocol.',
+  'A17': 'Entry. Period. Lunar month ×2. Venus. Taurus. Gemini.\n→ Intercalary month + Venus in zodiacal transit.',
+  'A28': 'Heliacal target. Confirmed. Solar cardinal.\n→ Certification at a cardinal point (ratio 7260×).',
+  'A29': '= A17 identical group — verification protocol at spring equinox.\n→ Day 180 = spring equinox.',
+  'B01': 'Entry. Period. Scorpion. Pleiades. Moon visible.\n→ Day 198 ≈ heliacal rising of Pleiades +4 days.',
+  'B13': 'Sagittarius. Aquila ×2. Cygnus. Venus.\n→ Summer Triangle at zenith. Day 269 = summer solstice.',
+  'B21': 'Scorpion. Sagittarius. Capricorn. Moon. Jupiter.\n→ Autumnal zodiacal sequence + Moon-Jupiter conjunction.',
+  'B24': 'Moon. Pleiades (lunar). Moon.\n→ Pleiades framed by Moon — intercalary observation, no month counted.',
+};
+
+const LEVEL_COLORS = {1:'#58a6ff',2:'#3fb950',3:'#bc8cff',4:'#e3a84c',5:'#f85149'};
+
+function getGroupLevel(signs) {
+  if (signs.includes(2)) return 1;
+  if (signs.includes(12)) return 2;
+  if (signs.includes(27) || signs.includes(25)) return 3;
+  if (signs.includes(7)) return 4;
+  return 5;
+}
+
+function formatDay(day) {
+  const months = ['Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep'];
+  const adjusted = day % 365;
+  const monthIdx = Math.floor(adjusted / 30.4);
+  const dayInMonth = Math.round(adjusted % 30.4) + 1;
+  return `~${months[monthIdx]} ${dayInMonth}`;
+}
+
+function renderDisc() {
+  const faceAEl = document.getElementById('faceA');
+  const faceBEl = document.getElementById('faceB');
+
+  GROUPS.forEach(g => {
+    const el = document.createElement('div');
+    el.className = `group-cell lvl-${getGroupLevel(g.signs)}`;
+    if (g.oblique) el.classList.add('oblique');
+    el.textContent = g.g;
+    el.title = `${g.g} — Day ${g.day.toFixed(0)}`;
+    el.onclick = () => showDetail(g);
+    (g.face === 'A' ? faceAEl : faceBEl).appendChild(el);
+  });
+}
+
+function showDetail(g) {
+  const panel = document.getElementById('detailPanel');
+  const level = getGroupLevel(g.signs);
+  const levelColor = LEVEL_COLORS[level];
+  const reading = READINGS[g.g] || null;
+
+  let signsHTML = g.signs.map(s => {
+    const info = SIGNS[s] || {name:`S${s} (unidentified)`,level:5,cat:'unknown'};
+    const col = LEVEL_COLORS[info.level];
+    return `<div class="sign-item" style="border-color:${col}40">
+      <span class="sign-id" style="color:${col}">S${String(s).padStart(2,'0')}</span>
+      <span class="sign-desc">${info.name}</span>
+      <span class="sign-level">L${info.level}</span>
+    </div>`;
+  }).join('');
+
+  panel.innerHTML = `
+    <h3 style="color:${levelColor}">${g.g}</h3>
+    <p class="subtitle">Day ${g.day.toFixed(0)} · ${formatDay(g.day)} · Face ${g.face}</p>
+    ${g.oblique ? '<span class="oblique-badge">/ Oblique stroke — absent lunar month</span>' : ''}
+    <div class="sign-list" style="margin-top:12px">${signsHTML}</div>
+    ${reading ? `<div class="reading-box"><strong>Reading:</strong><br>${reading.replace(/\n/g,'<br>')}</div>` : ''}
+    <div class="metadata">
+      <p>Level: <span>L${level}</span> · Signs: <span>${g.signs.length}</span></p>
+    </div>
+  `;
+}
+
+// Legend filter
+document.getElementById('legend').addEventListener('click', e => {
+  const item = e.target.closest('.legend-item');
+  if (!item) return;
+  document.querySelectorAll('.legend-item').forEach(i => i.classList.remove('active'));
+  item.classList.add('active');
+  const filter = item.dataset.filter;
+  document.querySelectorAll('.group-cell').forEach(cell => {
+    if (filter === 'all') {
+      cell.style.opacity = '1';
+    } else {
+      const hasLevel = cell.classList.contains(`lvl-${filter}`);
+      cell.style.opacity = hasLevel ? '1' : '0.15';
+    }
+  });
+});
+
+renderDisc();
+</script>
+</body>
+</html>

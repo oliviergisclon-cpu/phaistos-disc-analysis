@@ -1,0 +1,28 @@
+sign_id,identification_en,category,certainty,occurrences,key_evidence
+S02,Group delimiter,structural,CERTAIN,19,Position 1 invariant p=4.62e-12
+S03,Confirmation act,instrumental,CERTAIN,2,S10->S03->S38 ratio 7260x
+S07,Moon visible,lunar_phase,STRONG,18,Dominant face B 15/18
+S08,Jupiter,planet,STRONG,5,S36->S07->S08 ratio 968x
+S10,Heliacal target,instrumental,STRONG,4,4 cardinals covered
+S12,Period identifier,structural,CERTAIN,14,Follows S02 in 13/14 groups p=1.40e-14
+S13,Spica alpha-Vir,star,STRONG,6,S13->S01 ratio 24x
+S18,Gnomon solar measure,instrumental,STRONG,12,Perfect A=B balance
+S19,Venus morning star,planet,STRONG,5,Precedes S35 ratio 20x
+S20,Cygnus Summer Triangle,star,STRONG,2,S24->S20 ratio 54x
+S22,Scorpion Antares,constellation,STRONG,8,Exclusive face B
+S23,Result notation,instrumental,STRONG,11,Systematic final position
+S24,Aquila Altair,star,STRONG,11,Exclusive face B Summer Triangle
+S25,Lunar quarter,lunar_month,STRONG,7,Follows S27 ratio 9x
+S26,Sirius or Scorpion,star,STRONG,6,Polysemy: winter=Sirius summer=Scorpion
+S27,Lunar month marker,lunar_month,STRONG,15,p=0.022 bias +1.4d = first crescent
+S28,Procyon,star,STRONG,2,Exclusive to oblique groups
+S29,Sagittarius,constellation,STRONG,11,Doubled A04+B13
+S31,Orion,constellation,STRONG,5,Exclusive face A
+S33,Leo Regulus,constellation,STRONG,6,Dominant face A
+S35,Venus planet,planet,STRONG,11,Perfect A=B balance 11/11
+S36,Capricorn,constellation,STRONG,3,S29->S36->S07 ratio 440x
+S37,Taurus,constellation,STRONG,4,S37->S21 ratio 2640x
+S38,Solar cardinal,structural,CERTAIN,4,4/4 cardinals p=1.92e-6
+S40,Pleiades seasonal,star,STRONG,6,Heliacal rising start face B
+S45,Pleiades lunar,star,STRONG,6,Enriched in oblique groups ratio 5.2x
+S01,Observation act,instrumental,STRONG,11,Final position S13->S01
