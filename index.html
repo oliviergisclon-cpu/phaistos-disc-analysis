@@ -164,6 +164,13 @@
     border-color: var(--gold);
   }
 
+  .group-cell:focus-visible,
+  .legend-item:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+    z-index: 10;
+  }
+
   .group-cell.oblique::after {
     content: '/';
     position: absolute;
@@ -348,7 +355,7 @@
   <h1>THE PHAISTOS DISC</h1>
   <p>A Lunisolar Information System · ~1700 BCE · Phaistos, Crete</p>
   <p style="margin-top:8px; font-size:0.8rem; color: #58a6ff;">
-    First structural decoding after 117 years of failed attempts · Gisclon (2026)
+    A candidate structural reading, open to review and refutation · Gisclon (2026)
   </p>
 </header>
 
@@ -366,12 +373,12 @@
     <span class="label">Levels</span>
   </div>
   <div class="stat">
-    <span class="number">94%</span>
-    <span class="label">Decoded</span>
+    <span class="number">94%*</span>
+    <span class="label">Decoded (paper claim, unverified here)</span>
   </div>
   <div class="stat">
-    <span class="number">10⁻³⁸</span>
-    <span class="label">Fisher p</span>
+    <span class="number">10⁻²⁰·⁹</span>
+    <span class="label">Fisher p (14 tests, not independent — see below)</span>
   </div>
   <div class="stat">
     <span class="number">11</span>
@@ -384,23 +391,23 @@
   <div class="disc-container">
     <h2>Interactive Disc — Click any group to read it</h2>
 
-    <div class="legend" id="legend">
-      <div class="legend-item active" data-filter="all">
+    <div class="legend" id="legend" role="group" aria-label="Filter by level">
+      <div class="legend-item active" data-filter="all" tabindex="0" role="button" aria-pressed="true">
         <div class="legend-dot" style="background:#8b949e"></div>All
       </div>
-      <div class="legend-item" data-filter="1">
+      <div class="legend-item" data-filter="1" tabindex="0" role="button" aria-pressed="false">
         <div class="legend-dot" style="background:#58a6ff"></div>Level 1 — Structure
       </div>
-      <div class="legend-item" data-filter="2">
+      <div class="legend-item" data-filter="2" tabindex="0" role="button" aria-pressed="false">
         <div class="legend-dot" style="background:#3fb950"></div>Level 2 — Period
       </div>
-      <div class="legend-item" data-filter="3">
+      <div class="legend-item" data-filter="3" tabindex="0" role="button" aria-pressed="false">
         <div class="legend-dot" style="background:#bc8cff"></div>Level 3 — Lunar month
       </div>
-      <div class="legend-item" data-filter="4">
+      <div class="legend-item" data-filter="4" tabindex="0" role="button" aria-pressed="false">
         <div class="legend-dot" style="background:#e3a84c"></div>Level 4 — Lunar phase
       </div>
-      <div class="legend-item" data-filter="5">
+      <div class="legend-item" data-filter="5" tabindex="0" role="button" aria-pressed="false">
         <div class="legend-dot" style="background:#f85149"></div>Level 5 — Content
       </div>
     </div>
@@ -423,59 +430,96 @@
     </div>
     <div class="metadata" style="margin-top:20px">
       <p>This is not a translation.<br>
-      It is a reading of a structured<br>
-      information system whose architecture<br>
-      is formally demonstrated.</p>
+      It is a candidate reading of a proposed<br>
+      structural pattern, statistically strong<br>
+      on some tests, still open to review.</p>
     </div>
   </div>
 
   <div class="stats-section">
-    <h2>Statistical Proof — 15 Independent Tests</h2>
+    <h2>Statistical Proof — 14 of 15 Tests Reproduced</h2>
+    <p style="color:var(--muted); font-size:0.85rem; max-width:70ch; margin-bottom:8px">
+      Values below are what <code>phaistos_analysis.py</code> actually outputs against
+      <code>phaistos_disc.csv</code> in this repository. T4 needs an external lunar
+      ephemeris this repo doesn't include, so it's left out rather than assumed.
+      Several numbers here differ from the figures originally published in the paper —
+      see <code>PROOF_TABLE.md</code> for the full comparison and open discrepancies.
+    </p>
     <div class="tests-grid">
       <div class="test-card">
         <div class="test-name">T1 — S02 position 1 invariant</div>
-        <div class="test-p p-certain">p = 4.62 × 10⁻¹²</div>
+        <div class="test-p p-certain">p = 3.64 × 10⁻¹²</div>
         <div class="test-verdict">✓ Survives Bonferroni · CERTAIN</div>
       </div>
       <div class="test-card">
-        <div class="test-name">T3 — S12 follows S02 (face A)</div>
-        <div class="test-p p-certain">p = 1.40 × 10⁻¹⁴</div>
-        <div class="test-verdict">✓ Survives Bonferroni · CERTAIN</div>
+        <div class="test-name">T3 — S12 follows S02 (face A, 12/14)</div>
+        <div class="test-p p-certain">p = 1.10 × 10⁻⁵</div>
+        <div class="test-verdict">✓ Survives Bonferroni · differs from originally published 13/14</div>
       </div>
       <div class="test-card">
-        <div class="test-name">T2 — S38 at solar cardinals (4/4)</div>
-        <div class="test-p p-certain">p = 1.92 × 10⁻⁶</div>
-        <div class="test-verdict">✓ Survives Bonferroni · CERTAIN</div>
+        <div class="test-name">T2 — S38 at solar cardinals (4/4, ±10d)</div>
+        <div class="test-p p-strong">p = 5.20 × 10⁻³</div>
+        <div class="test-verdict">* Strong, not Bonferroni-certain · differs from originally published 1.92×10⁻⁶</div>
       </div>
       <div class="test-card">
         <div class="test-name">T9 — A14 = A20 identical groups</div>
-        <div class="test-p p-certain">p = 4.46 × 10⁻⁴</div>
+        <div class="test-p p-certain">p = 2.20 × 10⁻⁷</div>
         <div class="test-verdict">✓ Survives Bonferroni · CERTAIN</div>
       </div>
       <div class="test-card">
         <div class="test-name">T15 — Obliques exclude S27/S25</div>
-        <div class="test-p p-strong">p = 0.005</div>
+        <div class="test-p p-strong">p = 5.11 × 10⁻³</div>
         <div class="test-verdict">* Strong · Meta-marker of absent lunar info</div>
       </div>
       <div class="test-card">
         <div class="test-name">T7 — S31→S26 invariant order</div>
-        <div class="test-p p-strong">p = 0.031</div>
+        <div class="test-p p-strong">p = 3.13 × 10⁻²</div>
         <div class="test-verdict">* Strong · Orion always precedes Sirius</div>
       </div>
       <div class="test-card">
         <div class="test-name">T5 — S31 exclusive face A</div>
-        <div class="test-p p-strong">p = 0.034</div>
+        <div class="test-p p-strong">p = 2.86 × 10⁻²</div>
         <div class="test-verdict">* Strong · Orion = winter constellation</div>
       </div>
       <div class="test-card">
         <div class="test-name">T6 — S22 exclusive face B</div>
-        <div class="test-p p-strong">p = 0.029</div>
+        <div class="test-p p-strong">p = 2.40 × 10⁻²</div>
         <div class="test-verdict">* Strong · Scorpion = summer constellation</div>
       </div>
+      <div class="test-card">
+        <div class="test-name">T11 — S29 dominant face B</div>
+        <div class="test-p p-strong">p = 3.54 × 10⁻²</div>
+        <div class="test-verdict">* Strong</div>
+      </div>
+      <div class="test-card">
+        <div class="test-name">T12 — S13→S01 invariant order (5/5)</div>
+        <div class="test-p p-strong">p = 3.13 × 10⁻²</div>
+        <div class="test-verdict">* Strong · only 5 co-occurrences exist, not the 6 originally cited</div>
+      </div>
+      <div class="test-card">
+        <div class="test-name">T8 — S13 face coherence (3A / 3B)</div>
+        <div class="test-p p-suggestive">p = 0.656</div>
+        <div class="test-verdict">Not significant · contradicts originally published "Strong"</div>
+      </div>
+      <div class="test-card">
+        <div class="test-name">T10 — S33 face coherence (2A / 4B)</div>
+        <div class="test-p p-suggestive">p = 0.344</div>
+        <div class="test-verdict">Not significant · direction reversed vs. original claim</div>
+      </div>
+      <div class="test-card">
+        <div class="test-name">T13 — S40/S45 never co-present</div>
+        <div class="test-p p-suggestive">p = 0.522</div>
+        <div class="test-verdict">Qualitative, not significant</div>
+      </div>
+      <div class="test-card">
+        <div class="test-name">T14 — S18 A=B balance (6A / 6B)</div>
+        <div class="test-p p-suggestive">p = 1.000</div>
+        <div class="test-verdict">Qualitative, as expected</div>
+      </div>
       <div class="test-card" style="border-color: var(--gold); background: rgba(212,168,67,0.05)">
-        <div class="test-name" style="color:var(--gold)">Fisher Combined (15 tests)</div>
-        <div class="test-p" style="color:var(--gold)">p &lt; 10⁻³⁸</div>
-        <div class="test-verdict" style="color:var(--gold)">Null hypothesis definitively rejected</div>
+        <div class="test-name" style="color:var(--gold)">Fisher Combined (14 tests)</div>
+        <div class="test-p" style="color:var(--gold)">p ≈ 10⁻²⁰·⁹</div>
+        <div class="test-verdict" style="color:var(--gold)">Illustrative only — tests are not independent (several share signs), so this is not a formal joint significance level</div>
       </div>
     </div>
   </div>
@@ -642,7 +686,16 @@ function renderDisc() {
     if (g.oblique) el.classList.add('oblique');
     el.textContent = g.g;
     el.title = `${g.g} — Day ${g.day.toFixed(0)}`;
+    el.tabIndex = 0;
+    el.setAttribute('role', 'button');
+    el.setAttribute('aria-label', `Group ${g.g}, day ${g.day.toFixed(0)}`);
     el.onclick = () => showDetail(g);
+    el.onkeydown = (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        showDetail(g);
+      }
+    };
     (g.face === 'A' ? faceAEl : faceBEl).appendChild(el);
   });
 }
@@ -676,11 +729,13 @@ function showDetail(g) {
 }
 
 // Legend filter
-document.getElementById('legend').addEventListener('click', e => {
-  const item = e.target.closest('.legend-item');
-  if (!item) return;
-  document.querySelectorAll('.legend-item').forEach(i => i.classList.remove('active'));
+function applyFilter(item) {
+  document.querySelectorAll('.legend-item').forEach(i => {
+    i.classList.remove('active');
+    i.setAttribute('aria-pressed', 'false');
+  });
   item.classList.add('active');
+  item.setAttribute('aria-pressed', 'true');
   const filter = item.dataset.filter;
   document.querySelectorAll('.group-cell').forEach(cell => {
     if (filter === 'all') {
@@ -690,6 +745,20 @@ document.getElementById('legend').addEventListener('click', e => {
       cell.style.opacity = hasLevel ? '1' : '0.15';
     }
   });
+}
+
+document.getElementById('legend').addEventListener('click', e => {
+  const item = e.target.closest('.legend-item');
+  if (item) applyFilter(item);
+});
+
+document.getElementById('legend').addEventListener('keydown', e => {
+  const item = e.target.closest('.legend-item');
+  if (!item) return;
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    applyFilter(item);
+  }
 });
 
 renderDisc();

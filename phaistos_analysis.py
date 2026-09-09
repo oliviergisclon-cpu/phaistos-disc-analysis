@@ -25,7 +25,7 @@ import numpy as np
 # LOAD DATA
 # ============================================================
 
-def load_disc(filepath="data/phaistos_disc.csv"):
+def load_disc(filepath="phaistos_disc.csv"):
     """Load disc transcription from CSV."""
     groups = {}
     with open(filepath) as f:
@@ -106,9 +106,98 @@ def test_T9_identical_groups(groups):
     return {
         'test': 'T9 — A14=A20 identical groups',
         'observed': f'A14={a14} == A20={a20}: {identical}',
-        'p_value': 4.46e-4,
-        'significant': True,
-        'bonferroni': True
+        'p_value': p_val,
+        'significant': p_val < 0.05,
+        'bonferroni': p_val < 0.0036
+    }
+
+def test_T11_S29_face_B(groups):
+    """T11: S29 (Sagittarius) dominant on face B."""
+    s29_A = sum(1 for g, d in groups.items() if d['face']=='A' and 29 in d['signs'])
+    s29_B = sum(1 for g, d in groups.items() if d['face']=='B' and 29 in d['signs'])
+    result = stats.fisher_exact([[s29_B, 30-s29_B], [s29_A, 31-s29_A]], alternative='greater')
+    return {
+        'test': 'T11 — S29 (Sagittarius) dominant face B',
+        'observed': f'{s29_A}A / {s29_B}B',
+        'p_value': result[1],
+        'significant': result[1] < 0.05,
+        'bonferroni': result[1] < 0.0036
+    }
+
+def test_T14_S18_balance(groups):
+    """T14: S18 balanced between face A and face B (expected non-significant)."""
+    s18_A = sum(1 for g, d in groups.items() if d['face']=='A' and 18 in d['signs'])
+    s18_B = sum(1 for g, d in groups.items() if d['face']=='B' and 18 in d['signs'])
+    total = s18_A + s18_B
+    result = stats.binomtest(s18_A, total, 0.5, alternative='two-sided')
+    return {
+        'test': 'T14 — S18 A=B balance',
+        'observed': f'{s18_A}A / {s18_B}B',
+        'p_value': result.pvalue,
+        'significant': result.pvalue < 0.05,
+        'bonferroni': result.pvalue < 0.0036
+    }
+
+def test_T13_S40_S45_exclusive(groups):
+    """T13: S40 and S45 never co-occur in the same group."""
+    n = len(groups)
+    n40 = sum(1 for d in groups.values() if 40 in d['signs'])
+    n45 = sum(1 for d in groups.values() if 45 in d['signs'])
+    both = sum(1 for d in groups.values() if 40 in d['signs'] and 45 in d['signs'])
+    # Hypergeometric: P(0 overlap) if n45 groups were drawn at random among the n-n40 "non-40" slots
+    p_val = comb(n - n40, n45) / comb(n, n45)
+    return {
+        'test': 'T13 — S40/S45 never co-present',
+        'observed': f'{both} co-occurrences ({n40} groups w/ S40, {n45} w/ S45)',
+        'p_value': p_val,
+        'significant': p_val < 0.05,
+        'bonferroni': p_val < 0.0036
+    }
+
+def test_T8_S13_face(groups):
+    """T8: S13 (Spica) face coherence — reported as-is from the dataset,
+    whichever face turns out dominant (no assumed direction)."""
+    s13_A = sum(1 for g, d in groups.items() if d['face']=='A' and 13 in d['signs'])
+    s13_B = sum(1 for g, d in groups.items() if d['face']=='B' and 13 in d['signs'])
+    total = s13_A + s13_B
+    dominant = max(s13_A, s13_B)
+    result = stats.binomtest(dominant, total, 0.5, alternative='greater')
+    return {
+        'test': 'T8 — S13 (Spica) face coherence',
+        'observed': f'{s13_A}A / {s13_B}B',
+        'p_value': result.pvalue,
+        'significant': result.pvalue < 0.05,
+        'bonferroni': result.pvalue < 0.0036
+    }
+
+def test_T10_S33_face(groups):
+    """T10: S33 (Leo) face coherence — reported as-is from the dataset,
+    whichever face turns out dominant (no assumed direction)."""
+    s33_A = sum(1 for g, d in groups.items() if d['face']=='A' and 33 in d['signs'])
+    s33_B = sum(1 for g, d in groups.items() if d['face']=='B' and 33 in d['signs'])
+    total = s33_A + s33_B
+    dominant = max(s33_A, s33_B)
+    result = stats.binomtest(dominant, total, 0.5, alternative='greater')
+    return {
+        'test': 'T10 — S33 (Leo) face coherence',
+        'observed': f'{s33_A}A / {s33_B}B',
+        'p_value': result.pvalue,
+        'significant': result.pvalue < 0.05,
+        'bonferroni': result.pvalue < 0.0036
+    }
+
+def test_T12_S13_S01_order(groups):
+    """T12: S13 precedes S01 whenever both are present in a group."""
+    cooccur = [(g, d['signs']) for g, d in groups.items()
+               if 13 in d['signs'] and 1 in d['signs']]
+    correct_order = sum(1 for _, s in cooccur if s.index(13) < s.index(1))
+    result = stats.binomtest(correct_order, len(cooccur), 0.5, alternative='greater')
+    return {
+        'test': 'T12 — S13→S01 invariant order',
+        'observed': f'{correct_order}/{len(cooccur)} in correct order',
+        'p_value': result.pvalue,
+        'significant': result.pvalue < 0.05,
+        'bonferroni': result.pvalue < 0.0036
     }
 
 def test_T15_obliques_exclude_lunar(groups):
@@ -173,17 +262,22 @@ def test_bigram_S31_S26(groups):
 # ============================================================
 
 def fisher_combined(p_values):
-    """Fisher's method to combine independent p-values."""
-    chi2 = -2 * sum(log(p) for p in p_values if p > 0)
+    """Fisher's method to combine independent p-values.
+
+    Uses the log-survival function (logsf) instead of 1 - cdf: for very
+    small combined p-values, cdf saturates to 1.0 in float64 and 1 - cdf
+    silently underflows to a false 0.0 rather than the true (tiny) value.
+    """
+    chi2_stat = -2 * sum(log(p) for p in p_values if p > 0)
     df = 2 * len(p_values)
-    p_combined = 1 - stats.chi2.cdf(chi2, df)
-    return chi2, df, p_combined
+    log10_p = stats.chi2.logsf(chi2_stat, df) / log(10)
+    return chi2_stat, df, log10_p
 
 # ============================================================
 # MAIN
 # ============================================================
 
-def run_all_tests(filepath="data/phaistos_disc.csv"):
+def run_all_tests(filepath="phaistos_disc.csv"):
     print("=" * 60)
     print("PHAISTOS DISC — STRUCTURAL ANALYSIS")
     print("Gisclon (2026) — Reproducible Pipeline")
@@ -202,7 +296,17 @@ def run_all_tests(filepath="data/phaistos_disc.csv"):
         test_S31_face_A,
         test_S22_face_B,
         test_bigram_S31_S26,
+        test_T8_S13_face,
+        test_T10_S33_face,
+        test_T11_S29_face_B,
+        test_T12_S13_S01_order,
+        test_T13_S40_S45_exclusive,
+        test_T14_S18_balance,
     ]
+    # NOTE: T4 ("S27 correlates with new moon") is NOT included above.
+    # It requires an external lunar ephemeris (actual new-moon dates c. 1700 BCE)
+    # that is not part of this dataset. See README "What remains open".
+    # Do not fabricate this test with an assumed epoch/phase offset.
 
     results = []
     p_values = []
@@ -218,11 +322,16 @@ def run_all_tests(filepath="data/phaistos_disc.csv"):
         print(f"  {r['test']:<45} {r['observed']:<20} {r['p_value']:>12.4e} {bonf:>6}")
 
     print("\n" + "=" * 60)
-    chi2, df, p_comb = fisher_combined(p_values)
+    chi2, df, log10_p = fisher_combined(p_values)
     print(f"Fisher combined ({len(p_values)} tests):")
-    print(f"  χ² = {chi2:.1f}, df = {df}, p = {p_comb:.2e}")
-    print(f"\nConclusion: p < 10^-38 — null hypothesis definitively rejected")
-    print("The disc is a structured information system, not a random document.")
+    print(f"  χ² = {chi2:.1f}, df = {df}, log10(p) = {log10_p:.2f}  (p ≈ 10^{log10_p:.1f})")
+    print(f"\nCAUTION: several of these {len(p_values)} tests share the same underlying")
+    print("signs/groups (e.g. S02 in T1 and T3; S13 in T8/T10/T12) and are therefore")
+    print("not statistically independent. Fisher's method assumes independence, so")
+    print("this combined p-value should be treated as illustrative, not as a formal")
+    print("rejection threshold, until the tests are decorrelated or re-derived.")
+    print(f"\nConclusion: p ≈ 10^{log10_p:.1f} for the {len(p_values)} tests implemented here.")
+    print("T4 (lunar correlation) is not included — see note above.")
 
     return results
 
