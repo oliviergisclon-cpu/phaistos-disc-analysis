@@ -176,7 +176,7 @@ def fisher_combined(p_values):
     """Fisher's method to combine independent p-values."""
     chi2 = -2 * sum(log(p) for p in p_values if p > 0)
     df = 2 * len(p_values)
-    p_combined = 1 - stats.chi2.cdf(chi2, df)
+    p_combined = stats.chi2.sf(chi2, df)  # survival function: avoids underflow to 0
     return chi2, df, p_combined
 
 # ============================================================
@@ -221,7 +221,7 @@ def run_all_tests(filepath="data/phaistos_disc.csv"):
     chi2, df, p_comb = fisher_combined(p_values)
     print(f"Fisher combined ({len(p_values)} tests):")
     print(f"  χ² = {chi2:.1f}, df = {df}, p = {p_comb:.2e}")
-    print(f"\nConclusion: p < 10^-38 — null hypothesis definitively rejected")
+    print(f"\nConclusion: p = {p_comb:.1e} — null hypothesis definitively rejected")
     print("The disc is a structured information system, not a random document.")
 
     return results
